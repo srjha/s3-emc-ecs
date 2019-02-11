@@ -29,15 +29,18 @@ public class S3DataController {
 
 	@GetMapping("/content/{DOC_ID}")
 	public ResponseEntity<byte[]> get(@PathVariable("DOC_ID") String docId) {
-
 		ByteArrayOutputStream downloadFile = dataService.downloadFile(docId);
+
+		if (downloadFile == null) {
+			return ResponseEntity.notFound().build();
+		}
 		BodyBuilder responseContent = ResponseEntity.ok().contentType(getContentType(docId))
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + docId + "\"");
 		return responseContent.body(downloadFile.toByteArray());
 
 	}
 
-	public static MediaType getContentType(String fileName) {
+	private MediaType getContentType(String fileName) {
 		String guessedContentType = URLConnection.guessContentTypeFromName(fileName);
 		if (guessedContentType != null) {
 			return MediaType.valueOf(guessedContentType);

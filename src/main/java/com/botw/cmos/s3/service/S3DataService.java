@@ -9,9 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.botw.cmos.s3.model.S3Data;
@@ -45,10 +48,10 @@ public class S3DataService {
 				outputStream.write(byteContentBufer, 0, length);
 			}
 			return outputStream;
-		} catch (IOException e) {
+		} catch (IOException | AmazonS3Exception e) {
 			String msg = "Error while trying to download file from s3 bucket " + bucketName + " for key " + key;
 			LOGGER.error(msg, e);
-			throw new ApplicationException(msg, e);
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg, e);
 		}
 
 	}
